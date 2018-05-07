@@ -18,11 +18,11 @@ var cn_free_state = Module.cwrap('free_state');
 
 function init_socket() {
   socket = new WebSocket('ws://' + location.hostname + ':8081');
-  socket.addEventListener('open', function(event){
+  socket.addEventListener('open', function(event) {
     console.log('WebSocket opened: ' + event);
     socket.send(JSON.stringify(login));
   });
-  socket.addEventListener('message', function(event){
+  socket.addEventListener('message', function(event) {
     console.log('WebSocket message: ' + event.data);
     var data = JSON.parse(event.data);
     if(data.error) {
@@ -39,10 +39,10 @@ function init_socket() {
       do_work(data.params, socket);
     }
   });
-  socket.addEventListener('error', function(event){
+  socket.addEventListener('error', function(event) {
     console.log('WebSocket error: ' + event);
   });
-  socket.addEventListener('close', function(event){
+  socket.addEventListener('close', function(event) {
     console.log('WebSocket closed: ' + event.code + ' ' + event.reason);
     login_id = null;
   });
@@ -60,12 +60,12 @@ function do_work(job, socket) {
   cn_allocate_state();
   console.log('CN allocated state');
 
-  var bytes = job.blob.match(/.{2}/g).map(function(h){ 
+  var bytes = job.blob.match(/.{2}/g).map(function(h) {
     return parseInt(h, 16);
   });
   var blob = new Uint8Array(bytes);
 
-  bytes = job.target.match(/.{2}/g).map(function(h){
+  bytes = job.target.match(/.{2}/g).map(function(h) {
     return parseInt(h, 16);
   });
   var target = new Uint8Array(bytes);
@@ -113,7 +113,7 @@ function do_work(job, socket) {
   socket.send(JSON.stringify(submit));
 }
 
-Module.onRuntimeInitialized = function(){
+Module.onRuntimeInitialized = function() {
   console.log('Runtime initialized');
   Module.postCustomMessage({message:'show_ui'});
 };

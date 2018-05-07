@@ -23,7 +23,7 @@ LDPARAM += $(LDFLAGS) -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' --p
 
 INCPATH :=  $(DIRS) /opt/local/include
 
-LIBPATH :=  /opt/local/lib/ /usr/local/lib 
+LIBPATH :=  /opt/local/lib/ /usr/local/lib
 
 EXTRA_FILES = Makefile
 
@@ -68,5 +68,5 @@ dirs:
 	@-$(foreach DIR,$(DIRS), if [ ! -e $(STORE)/$(DIR) ]; then mkdir -p $(STORE)/$(DIR); fi; )
 
 run: $(TARGET)
-	emrun --no_browser --no_emrun_detect --port 8080 $(STORE)/$(TARGET).html 
+	emrun --no_browser --no_emrun_detect --port 8080 $(STORE)/$(TARGET).html
 

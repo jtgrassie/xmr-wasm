@@ -13,6 +13,8 @@ Then simply run `make` in the root directory of this repository. This will outpu
 
 For an optimized release version, just run `make TYPE=release`.
 
+To test locally, just tack `run` onto the end of the above commands, which will start a local server for testing (required to load the WebAssembly module).
+
 ## License
 
 Please see [LICENSE](LICENSE)
