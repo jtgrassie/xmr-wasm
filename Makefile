@@ -16,7 +16,7 @@ CPPDEFS += DEBUG
 endif
 
 ifeq ($(TYPE), release)
-CCPARAM += -O1
+CCPARAM += -O2
 endif
 
 LDPARAM += $(LDFLAGS) -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' --proxy-to-worker --shell-file template.html --post-js post.js

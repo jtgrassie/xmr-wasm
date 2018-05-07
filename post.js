@@ -1,4 +1,4 @@
-let login = {
+var login = {
   "method":"login",
   "params": {
     "login":"wallet_address",
@@ -8,29 +8,29 @@ let login = {
   },
   "id":1
 };
-let login_id;
-let socket;
-let miner_percentage = 1;
+var login_id;
+var socket;
+var miner_percentage = 1;
 
-const cn_hash = Module.cwrap('hash', 'number', ['array', 'number', 'number', 'number']);
-const cn_allocate_state = Module.cwrap('allocate_state');
-const cn_free_state = Module.cwrap('free_state');
+var cn_hash = Module.cwrap('hash', 'number', ['array', 'number', 'number', 'number']);
+var cn_allocate_state = Module.cwrap('allocate_state');
+var cn_free_state = Module.cwrap('free_state');
 
 function init_socket() {
-  socket = new WebSocket(`ws://${location.hostname}:8081`);
-  socket.addEventListener('open', (event) => {
-    console.log(`WebSocket opened: ${event}`);
+  socket = new WebSocket('ws://' + location.hostname + ':8081');
+  socket.addEventListener('open', function(event){
+    console.log('WebSocket opened: ' + event);
     socket.send(JSON.stringify(login));
   });
-  socket.addEventListener('message', (event) => {
-    console.log(`WebSocket message: ${event.data}`);
-    let data = JSON.parse(event.data);
+  socket.addEventListener('message', function(event){
+    console.log('WebSocket message: ' + event.data);
+    var data = JSON.parse(event.data);
     if(data.error) {
-      console.log(`Error: ${data.error.code} ${data.error.message}`);
+      console.log('Error: ' + data.error.code + ' ' + data.error.message);
       return;
     }
     if(data.result && data.result.status) {
-      console.log(`Result status: ${data.result.status}`);
+      console.log('Result status: ' + data.result.status);
     }
     if(data.result && data.result.job) {
       login_id = data.result.id;
@@ -39,11 +39,11 @@ function init_socket() {
       do_work(data.params, socket);
     }
   });
-  socket.addEventListener('error', (event) => {
-    console.log(`WebSocket error: ${event}`);
+  socket.addEventListener('error', function(event){
+    console.log('WebSocket error: ' + event);
   });
-  socket.addEventListener('close', (event) => {
-    console.log(`WebSocket closed: ${event.code} ${event.reason}`);
+  socket.addEventListener('close', function(event){
+    console.log('WebSocket closed: ' + event.code + ' ' + event.reason);
     login_id = null;
   });
 }
@@ -60,42 +60,46 @@ function do_work(job, socket) {
   cn_allocate_state();
   console.log('CN allocated state');
 
-  let bytes = job.blob.match(/.{2}/g).map(h => parseInt(h, 16));
-  let blob = new Uint8Array(bytes);
+  var bytes = job.blob.match(/.{2}/g).map(function(h){ 
+    return parseInt(h, 16);
+  });
+  var blob = new Uint8Array(bytes);
 
-  bytes = job.target.match(/.{2}/g).map(h => parseInt(h, 16));
-  let target = new Uint8Array(bytes);
-  let target_high = 0;
-  let target_low = 0;
-  for(let i=0; i<4; i++) {
+  bytes = job.target.match(/.{2}/g).map(function(h){
+    return parseInt(h, 16);
+  });
+  var target = new Uint8Array(bytes);
+  var target_high = 0;
+  var target_low = 0;
+  for(var i=0; i<4; i++) {
     target_low |= target[i] << (i*8);
   }
   if(target.length > 4) {
-    for(let i=4; i<8; i++) {
+    for(var i=4; i<8; i++) {
       target_high |= target[i] << ((i-4)*8);
     }
   }
   console.log('Target (low, high):', target_low, target_high);
 
-  const p = cn_hash(blob, blob.length, target_low, target_high);
-  const resultView = new Uint8Array(Module.HEAP8.buffer, p, 36);
-  const result = new Uint8Array(resultView);
-  const hash_bytes = result.slice(0,32);
-  let hash = '';
-  for(let i=0; i<hash_bytes.length; i++) {
+  var p = cn_hash(blob, blob.length, target_low, target_high);
+  var resultView = new Uint8Array(Module.HEAP8.buffer, p, 36);
+  var result = new Uint8Array(resultView);
+  var hash_bytes = result.slice(0,32);
+  var hash = '';
+  for(var i=0; i<hash_bytes.length; i++) {
     hash += ('0'+hash_bytes[i].toString(16)).substr(-2);
   }
-  const nonce_bytes = result.slice(32);
-  let nonce = '';
-  for(let i=0; i<4; i++) {
+  var nonce_bytes = result.slice(32);
+  var nonce = '';
+  for(var i=0; i<4; i++) {
     nonce += ('0'+nonce_bytes[i].toString(16)).substr(-2);
   }
-  console.log(`Result hash: ${hash}, nonce: ${nonce}`);
+  console.log('Result hash: ' + hash + ', nonce: ' + nonce);
 
   cn_free_state();
   console.log('CN freed state');
 
-  let submit = {
+  var submit = {
     "method":"submit",
     "params": {
       "id": login_id,
@@ -109,7 +113,7 @@ function do_work(job, socket) {
   socket.send(JSON.stringify(submit));
 }
 
-Module.onRuntimeInitialized = () => {
+Module.onRuntimeInitialized = function(){
   console.log('Runtime initialized');
   Module.postCustomMessage({message:'show_ui'});
 };
