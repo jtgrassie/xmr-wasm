@@ -118,7 +118,7 @@ Module.onRuntimeInitialized = function(){
   Module.postCustomMessage({message:'show_ui'});
 };
 
-Module.onCustomMessage = (event) => {
+Module.onCustomMessage = function(event) {
   switch(event.data.userData.message) {
     case 'init_socket':
       miner_percentage = event.data.userData.miner_percentage;
@@ -132,6 +132,6 @@ Module.onCustomMessage = (event) => {
   }
 };
 
-Module.postCustomMessage = (data) => {
+Module.postCustomMessage = function(data) {
   postMessage({ target: 'custom', userData: data });
 };
