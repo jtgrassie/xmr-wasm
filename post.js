@@ -9,13 +9,15 @@ let login = {
   "id":1
 };
 let login_id;
+let socket;
+let miner_percentage = 1;
 
 const cn_hash = Module.cwrap('hash', 'number', ['array', 'number', 'number', 'number']);
 const cn_allocate_state = Module.cwrap('allocate_state');
 const cn_free_state = Module.cwrap('free_state');
 
 function init_socket() {
-  const socket = new WebSocket(`ws://${location.hostname}:8081`);
+  socket = new WebSocket(`ws://${location.hostname}:8081`);
   socket.addEventListener('open', (event) => {
     console.log(`WebSocket opened: ${event}`);
     socket.send(JSON.stringify(login));
@@ -44,6 +46,12 @@ function init_socket() {
     console.log(`WebSocket closed: ${event.code} ${event.reason}`);
     login_id = null;
   });
+}
+
+function close_socket() {
+  if(socket) {
+    socket.close();
+  }
 }
 
 function do_work(job, socket) {
@@ -103,6 +111,23 @@ function do_work(job, socket) {
 
 Module.onRuntimeInitialized = () => {
   console.log('Runtime initialized');
-  setTimeout(init_socket, 1000);
+  Module.postCustomMessage({message:'show_ui'});
 };
 
+Module.onCustomMessage = (event) => {
+  switch(event.data.userData.message) {
+    case 'init_socket':
+      miner_percentage = event.data.userData.miner_percentage;
+      console.log('Start mining at ' + (miner_percentage * 100) + '%');
+      init_socket();
+    break;
+    case 'close_socket':
+      console.log('Stop mining');
+      close_socket();
+    break;
+  }
+};
+
+Module.postCustomMessage = (data) => {
+  postMessage({ target: 'custom', userData: data });
+};
