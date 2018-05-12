@@ -17,7 +17,9 @@ var cn_allocate_state = Module.cwrap('allocate_state');
 var cn_free_state = Module.cwrap('free_state');
 
 function init_socket() {
-  socket = new WebSocket('ws://' + location.hostname + ':8081');
+  var proto = 'ws' + (location.protocol.substr(-2,1) == 's' ? 's://' : '://');
+  var port = ':8081';
+  socket = new WebSocket(proto + location.hostname + port);
   socket.addEventListener('open', function(event) {
     console.log('WebSocket opened: ' + event);
     socket.send(JSON.stringify(login));
