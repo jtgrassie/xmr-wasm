@@ -9,8 +9,8 @@
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
       canvas.emscripten { border: 0px none; background-color: black; }
       #ui { display: none; }
-      input, button { display: block; )
-
+      input, button { display: block; }
+      input { padding: 4px 0px; }
     </style>
   </head>
   <body>
@@ -20,6 +20,7 @@
       <div id='time_label'></div>
       <input id='time_slider' type='range' value='100' />
       <button id='start_stop_button'>Start mining</button>
+      <pre id='log_pre'></pre>
     </div>
 
     <script type='text/javascript'>
@@ -28,10 +29,11 @@
       var label = document.querySelector('#time_label');
       var slider = document.querySelector('#time_slider');
       var start_stop = document.querySelector('#start_stop_button');
+      var log_pre = document.querySelector('#log_pre');
       var mining = false;
-      label.innerHTML = 'Percentage: ' + slider.value;
+      label.innerHTML = 'Power: ' + slider.value + '%';
       slider.oninput = function(event) {
-        label.innerHTML = 'Percentage: ' + slider.value;
+        label.innerHTML = 'Power: ' + slider.value + '%';
       };
       start_stop.onclick = function(event) {
         mining = !mining;
@@ -53,8 +55,12 @@
           worker.postMessage({ target: 'custom', userData: data, preMain: options.preMain });
         },
         onCustomMessage: function(event) {
-          if(event.data.userData.message == 'show_ui') {
+          var data = event.data.userData;
+          if(data.message == 'show_ui') {
             ui.style.setProperty('display', 'block');
+          }
+          if(data.message == 'log_ui' && data.text) {
+            log_pre.innerHTML += data.text + '\n';
           }
         },
         print: (function() {

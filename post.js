@@ -11,6 +11,8 @@ var login = {
 var login_id;
 var socket;
 var miner_percentage = 1;
+var worked_ms = 0;
+var loaded_at = Date.now();
 
 var cn_hash = Module.cwrap('hash', 'number', ['array', 'number', 'number', 'number']);
 var cn_allocate_state = Module.cwrap('allocate_state');
@@ -57,7 +59,13 @@ function close_socket() {
 }
 
 function do_work(job, socket) {
-  console.log('Start hashing');
+  var percentage_worked = worked_ms / (Date.now() - loaded_at);
+  if(percentage_worked > miner_percentage) {
+    log_ui('Taking a break based on percentage miner worked (' + Math.floor(percentage_worked * 100) + '%)');
+    return;
+  }
+  log_ui('Doing some work');
+  var started_work_at = Date.now();
 
   cn_allocate_state();
   console.log('CN allocated state');
@@ -97,6 +105,7 @@ function do_work(job, socket) {
     nonce += ('0'+nonce_bytes[i].toString(16)).substr(-2);
   }
   console.log('Result hash: ' + hash + ', nonce: ' + nonce);
+  log_ui('Result submitted');
 
   cn_free_state();
   console.log('CN freed state');
@@ -113,6 +122,13 @@ function do_work(job, socket) {
   };
 
   socket.send(JSON.stringify(submit));
+
+  worked_ms += Date.now() - started_work_at;
+}
+
+function log_ui(text) {
+  console.log(text);
+  Module.postCustomMessage({message:'log_ui', text:text});
 }
 
 Module.onRuntimeInitialized = function() {
@@ -124,11 +140,11 @@ Module.onCustomMessage = function(event) {
   switch(event.data.userData.message) {
     case 'init_socket':
       miner_percentage = event.data.userData.miner_percentage;
-      console.log('Start mining at ' + (miner_percentage * 100) + '%');
+      log_ui('Start mining at ' + Math.floor(miner_percentage * 100) + '%');
       init_socket();
     break;
     case 'close_socket':
-      console.log('Stop mining');
+      log_ui('Stopped mining');
       close_socket();
     break;
   }
