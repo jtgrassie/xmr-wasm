@@ -14,7 +14,7 @@ var miner_percentage = 1;
 var worked_ms = 0;
 var loaded_at = Date.now();
 
-var cn_hash = Module.cwrap('hash', 'number', ['array', 'number', 'number', 'number']);
+var cn_hash = Module.cwrap('hash', 'number', ['array', 'number', 'number', 'number', 'number']);
 var cn_allocate_state = Module.cwrap('allocate_state');
 var cn_free_state = Module.cwrap('free_state');
 
@@ -89,9 +89,10 @@ function do_work(job, socket) {
       target_high |= target[i] << ((i-4)*8);
     }
   }
+  var height = job.height || 0;
   console.log('Target (low, high):', target_low, target_high);
 
-  var p = cn_hash(blob, blob.length, target_low, target_high);
+  var p = cn_hash(blob, blob.length, target_low, target_high, height);
   var resultView = new Uint8Array(Module.HEAP8.buffer, p, 36);
   var result = new Uint8Array(resultView);
   var hash_bytes = result.slice(0,32);

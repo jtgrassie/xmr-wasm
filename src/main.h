@@ -37,7 +37,7 @@ void slow_hash_free_state();
 
 void allocate_state();
 void free_state();
-uint8_t* hash(uint8_t* block_data, const size_t length, const uint32_t target_low, const uint32_t target_high);
+uint8_t* hash(uint8_t* block_data, const size_t length, const uint32_t target_low, const uint32_t target_high, const uint32_t height);
 
 #ifdef __cplusplus
 }

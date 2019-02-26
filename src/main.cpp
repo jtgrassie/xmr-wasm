@@ -49,7 +49,7 @@ void free_state()
 }
 
 EMSCRIPTEN_KEEPALIVE
-uint8_t* hash(uint8_t* block_data, const size_t length, const uint32_t target_low, const uint32_t target_high)
+uint8_t* hash(uint8_t* block_data, const size_t length, const uint32_t target_low, const uint32_t target_high, const uint32_t height)
 {
   memset(&result, 0, sizeof(struct result_t));
   uint64_t target = (uint64_t) target_high << 32 | target_low;
@@ -59,9 +59,10 @@ uint8_t* hash(uint8_t* block_data, const size_t length, const uint32_t target_lo
   uint64_t* p_result = (uint64_t*) (result.hash.data + 24);
   uint32_t* p_nonce = (uint32_t*) (block_data + 39);
   result.nonce = *p_nonce;
+  const uint8_t cn_variant = block_data[0] >= 7 ? block_data[0] - 6 : 0;
   while(true)
   {
-    crypto::cn_slow_hash(block_data, length, result.hash, 1);
+    crypto::cn_slow_hash(block_data, length, result.hash, cn_variant, height);
     if(*p_result < target)
     {
       break;
